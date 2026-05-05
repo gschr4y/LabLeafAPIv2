@@ -31,10 +31,10 @@ from torchvision import models, transforms
 
 APP_NAME = "API ResNet18 Soja"
 DEFAULT_MODEL_CANDIDATES = [
+    Path("model/resnet18_soja_best.pth"),
     Path("resultados_100ep_aug/resnet18_soja_best.pth"),
     Path("resultados_ate_1730_max/resnet18_soja_best.pth"),
     Path("resultados/resnet18_soja_best.pth"),
-    Path("model/resnet18_soja_best.pth"),
 ]
 
 
@@ -46,8 +46,16 @@ class PredictionItem(BaseModel):
 
 class PredictionResponse(BaseModel):
     predicted_class: str
+    class_name: str
+    classe: str
+    classe_predita: str
+    resultado: str
+    doenca: str
     confidence: float
     confidence_percent: float
+    confianca: float
+    confianca_percentual: float
+    percentual_confianca: float
     top_k: List[PredictionItem]
     probabilities: Dict[str, float]
 
@@ -230,10 +238,22 @@ def predict_image(image: Image.Image, top_k: int = 3) -> PredictionResponse:
         for idx, class_name in enumerate(bundle.classes)
     }
 
+    predicted_class = bundle.classes[best_idx]
+    confidence = float(probs[best_idx])
+    confidence_percent = float(probs[best_idx] * 100)
+
     return PredictionResponse(
-        predicted_class=bundle.classes[best_idx],
-        confidence=float(probs[best_idx]),
-        confidence_percent=float(probs[best_idx] * 100),
+        predicted_class=predicted_class,
+        class_name=predicted_class,
+        classe=predicted_class,
+        classe_predita=predicted_class,
+        resultado=predicted_class,
+        doenca=predicted_class,
+        confidence=confidence,
+        confidence_percent=confidence_percent,
+        confianca=confidence_percent,
+        confianca_percentual=confidence_percent,
+        percentual_confianca=confidence_percent,
         top_k=top_items,
         probabilities=probabilities,
     )
