@@ -1,0 +1,13 @@
+torch
+torchvision
+numpy
+matplotlib
+seaborn
+tqdm
+pillow
+fastapi
+uvicorn[standard]
+python-multipart
+
+# Opcional para GPU AMD/DirectML:
+# torch-directml

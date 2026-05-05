@@ -1,0 +1,20 @@
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Datasets locais e imagens geradas
+data/
+data_augmented/
+data_augmented_max/
+
+# Resultados de treino e checkpoints grandes
+resultados/
+resultados_100ep_aug/
+resultados_ate_1730_max/
+resultados_max_aug/
+*.pth
+
+# Arquivos locais
+.env
+.DS_Store
