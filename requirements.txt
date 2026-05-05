@@ -1,13 +1,8 @@
-torch
-torchvision
-numpy
-matplotlib
-seaborn
-tqdm
-pillow
-fastapi
-uvicorn[standard]
-python-multipart
+--extra-index-url https://download.pytorch.org/whl/cpu
 
-# Opcional para GPU AMD/DirectML:
-# torch-directml
+torch==2.5.1+cpu
+torchvision==0.20.1+cpu
+fastapi==0.115.6
+uvicorn[standard]==0.32.1
+python-multipart==0.0.20
+pillow==11.0.0

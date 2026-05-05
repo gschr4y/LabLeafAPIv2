@@ -62,6 +62,7 @@ class ModelBundle:
         self.model: Optional[nn.Module] = None
         self.classes: List[str] = []
         self.model_path: Optional[Path] = None
+        self.load_error: Optional[str] = None
         self.device = torch.device("cpu")
 
     @property
@@ -166,11 +167,16 @@ def load_model() -> None:
     bundle.model = model
     bundle.classes = list(classes)
     bundle.model_path = model_path
+    bundle.load_error = None
 
 
 @app.on_event("startup")
 def startup_event() -> None:
-    load_model()
+    try:
+        load_model()
+    except Exception as exc:
+        bundle.load_error = str(exc)
+        print(f"Modelo nao carregado no startup: {exc}")
 
 
 def read_image_from_bytes(raw: bytes) -> Image.Image:
@@ -182,7 +188,14 @@ def read_image_from_bytes(raw: bytes) -> Image.Image:
 
 def ensure_model_loaded() -> nn.Module:
     if not bundle.loaded:
-        load_model()
+        try:
+            load_model()
+        except Exception as exc:
+            bundle.load_error = str(exc)
+            raise HTTPException(
+                status_code=503,
+                detail=f"Modelo nao carregado: {exc}",
+            ) from exc
     if bundle.model is None:
         raise HTTPException(status_code=503, detail="Modelo nao carregado.")
     return bundle.model
@@ -242,6 +255,7 @@ def health() -> Dict[str, object]:
         "status": "ok" if bundle.loaded else "model_not_loaded",
         "model_loaded": bundle.loaded,
         "model_path": str(bundle.model_path) if bundle.model_path else None,
+        "load_error": bundle.load_error,
         "classes": len(bundle.classes),
     }
 
