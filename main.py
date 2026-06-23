@@ -32,6 +32,7 @@ from torchvision import models, transforms
 APP_NAME = "API ResNet18 Soja"
 DEFAULT_MODEL_CANDIDATES = [
     Path("model/resnet18_soja_best.pth"),
+    Path("resnet18_soja_best.pth"),
     Path("resultados_100ep_aug/resnet18_soja_best.pth"),
     Path("resultados_ate_1730_max/resnet18_soja_best.pth"),
     Path("resultados/resnet18_soja_best.pth"),
