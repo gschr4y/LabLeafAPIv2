@@ -15,7 +15,9 @@ resultados_100ep_aug/
 resultados_ate_1730_max/
 resultados_max_aug/
 resultados_clean/
+resultados_clean_treino_*/
 *.pth
+!resnet18_soja_best.pth
 !model/
 !model/resnet18_soja_best.pth
 
