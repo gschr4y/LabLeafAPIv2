@@ -41,6 +41,7 @@ DEFAULT_MODEL_CANDIDATES = [
 
 class PredictionItem(BaseModel):
     classe: str
+    classe_original: str
     probabilidade: float
     percentual: float
 
@@ -52,6 +53,8 @@ class PredictionResponse(BaseModel):
     classe_predita: str
     resultado: str
     doenca: str
+    original_class: str
+    classe_original: str
     confidence: float
     confidence_percent: float
     confianca: float
@@ -59,6 +62,7 @@ class PredictionResponse(BaseModel):
     percentual_confianca: float
     top_k: List[PredictionItem]
     probabilities: Dict[str, float]
+    probabilidades: Dict[str, float]
 
 
 class Base64Request(BaseModel):
@@ -80,6 +84,19 @@ class ModelBundle:
 
 
 bundle = ModelBundle()
+
+CLASS_NAME_TRANSLATIONS: Dict[str, str] = {
+    "Mossaic Virus": "Virus do mosaico",
+    "Southern blight": "Murcha de esclerocio",
+    "Sudden Death Syndrone": "Sindrome da morte subita",
+    "Yellow Mosaic": "Mosaico amarelo",
+    "bacterial_blight": "Crestamento bacteriano",
+    "brown_spot": "Mancha parda",
+    "crestamento": "Crestamento foliar",
+    "ferrugen": "Ferrugem",
+    "powdery_mildew": "Oidio",
+    "septoria": "Septoriose",
+}
 
 app = FastAPI(
     title=APP_NAME,
@@ -210,6 +227,10 @@ def ensure_model_loaded() -> nn.Module:
     return bundle.model
 
 
+def display_class_name(class_name: str) -> str:
+    return CLASS_NAME_TRANSLATIONS.get(class_name, class_name.replace("_", " ").title())
+
+
 def predict_image(image: Image.Image, top_k: int = 3) -> PredictionResponse:
     model = ensure_model_loaded()
     if top_k < 1:
@@ -228,7 +249,8 @@ def predict_image(image: Image.Image, top_k: int = 3) -> PredictionResponse:
 
     top_items = [
         PredictionItem(
-            classe=bundle.classes[idx],
+            classe=display_class_name(bundle.classes[idx]),
+            classe_original=bundle.classes[idx],
             probabilidade=float(probs[idx]),
             percentual=float(probs[idx] * 100),
         )
@@ -238,8 +260,13 @@ def predict_image(image: Image.Image, top_k: int = 3) -> PredictionResponse:
         class_name: float(probs[idx])
         for idx, class_name in enumerate(bundle.classes)
     }
+    probabilidades = {
+        display_class_name(class_name): probability
+        for class_name, probability in probabilities.items()
+    }
 
-    predicted_class = bundle.classes[best_idx]
+    original_class = bundle.classes[best_idx]
+    predicted_class = display_class_name(original_class)
     confidence = float(probs[best_idx])
     confidence_percent = float(probs[best_idx] * 100)
 
@@ -250,6 +277,8 @@ def predict_image(image: Image.Image, top_k: int = 3) -> PredictionResponse:
         classe_predita=predicted_class,
         resultado=predicted_class,
         doenca=predicted_class,
+        original_class=original_class,
+        classe_original=original_class,
         confidence=confidence,
         confidence_percent=confidence_percent,
         confianca=confidence_percent,
@@ -257,6 +286,7 @@ def predict_image(image: Image.Image, top_k: int = 3) -> PredictionResponse:
         percentual_confianca=confidence_percent,
         top_k=top_items,
         probabilities=probabilities,
+        probabilidades=probabilidades,
     )
 
 
@@ -284,7 +314,13 @@ def health() -> Dict[str, object]:
 @app.get("/classes")
 def classes() -> Dict[str, object]:
     ensure_model_loaded()
-    return {"total": len(bundle.classes), "classes": bundle.classes}
+    translated_classes = [display_class_name(class_name) for class_name in bundle.classes]
+    return {
+        "total": len(bundle.classes),
+        "classes": translated_classes,
+        "classes_original": bundle.classes,
+        "mapeamento": dict(zip(bundle.classes, translated_classes)),
+    }
 
 
 @app.post("/predict", response_model=PredictionResponse)
