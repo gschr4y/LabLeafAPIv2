@@ -7,13 +7,17 @@ venv/
 data/
 data_augmented/
 data_augmented_max/
+data_clean/
 
 # Resultados de treino e checkpoints grandes
 resultados/
 resultados_100ep_aug/
 resultados_ate_1730_max/
 resultados_max_aug/
+resultados_clean/
 *.pth
+!model/
+!model/resnet18_soja_best.pth
 
 # Arquivos locais
 .env
